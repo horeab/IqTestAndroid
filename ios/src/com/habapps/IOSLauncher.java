@@ -20,7 +20,7 @@ import org.robovm.pods.google.mobileads.GADInterstitialDelegateAdapter;
 import org.robovm.pods.google.mobileads.GADRequest;
 import org.robovm.pods.google.mobileads.GADRequestError;
 
-import libgdx.game.LettersGame;
+import libgdx.implementations.iq.SkelGame;
 import libgdx.utils.startgame.test.DefaultBillingService;
 import libgdx.utils.startgame.test.DefaultFacebookService;
 
@@ -29,7 +29,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
 
     private boolean adsInitialized = false;
 
-    private GameProperties gameProperties = GameProperties.lettersgame_ro;
+    private GameProperties gameProperties = GameProperties.iqtest;
 
     private GADBannerView bannerAdview;
     private GADInterstitial interstitialAd;
@@ -45,7 +45,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
         config.orientationPortrait = true;
         appInfoService = new LettersGameAppInfoServiceImpl(this);
         iosApplication = new IOSApplication(
-                new LettersGame(
+                new SkelGame(
                         new DefaultFacebookService(),
                         new DefaultBillingService(),
                         appInfoService),
@@ -75,7 +75,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
     public boolean didFinishLaunching(UIApplication application, UIApplicationLaunchOptions launchOptions) {
         boolean finishLaunching = super.didFinishLaunching(application, launchOptions);
 
-        if (!appInfoService.screenShotMode()) {
+        if (!appInfoService.screenShotMode() && !appInfoService.isProVersion()) {
             initializeAds(iosApplication);
         }
         return finishLaunching;
@@ -140,7 +140,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
     }
 
     public void showPopupAd() {
-        if (!appInfoService.screenShotMode()) {
+        if (!appInfoService.screenShotMode() && !appInfoService.isProVersion()) {
             if (interstitialAd.isReady()) {
                 interstitialAd.present(UIApplication.getSharedApplication().getKeyWindow().getRootViewController());
             } else {

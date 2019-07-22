@@ -1,18 +1,33 @@
 package com.habapps;
 
+import org.robovm.apple.foundation.NSBundle;
+
 import libgdx.constants.GameIdEnum;
 
 public enum GameProperties {
 
-    lettersgame_ro(
-            GameIdEnum.lettersgame,
-            "ro",
-            "Jocul Cuvintelor",
-            "appId",
-            "bannerId",
-            "interId",
-            "rewardId",
-            "iosAppstoreId");
+    iqtest(
+            GameIdEnum.skelgame,
+            NSBundle.getMainBundle().getLocalizedString("language", "en", "InfoPlist"),
+            NSBundle.getMainBundle().getLocalizedString("CFBundleDisplayName","en","InfoPlist"),
+            "ca-app-pub-9432399956064043~5498740745",
+            "ca-app-pub-9432399956064043/1981580837",
+            "ca-app-pub-9432399956064043/9246414061",
+            "ca-app-pub-9432399956064043/7505370259",
+            "1470777147",
+            "1473489377"),
+
+
+    iqtest_pro(
+            GameIdEnum.skelgame,
+            NSBundle.getMainBundle().getLocalizedString("language", "en", "InfoPlist"),
+            NSBundle.getMainBundle().getLocalizedString("CFBundleDisplayName","en","InfoPlist"),
+            "ca-app-pub-9432399956064043~5498740745",
+            "ca-app-pub-9432399956064043/1981580837",
+            "ca-app-pub-9432399956064043/9246414061",
+            "ca-app-pub-9432399956064043/7505370259",
+            "1473489377",
+            null);
 
     private GameIdEnum gameIdEnum;
     private String language;
@@ -22,6 +37,7 @@ public enum GameProperties {
     private String interstitialAdId;
     private String rewardAdId;
     private String storeAppId;
+    private String proVersionStoreAppId;
 
     GameProperties(GameIdEnum gameIdEnum,
                    String language,
@@ -30,7 +46,8 @@ public enum GameProperties {
                    String bannerAdId,
                    String interstitialAdId,
                    String rewardAdId,
-                   String storeAppId) {
+                   String storeAppId,
+                   String proVersionStoreAppId) {
         this.gameIdEnum = gameIdEnum;
         this.language = language;
         this.appName = appName;
@@ -39,6 +56,7 @@ public enum GameProperties {
         this.interstitialAdId = interstitialAdId;
         this.rewardAdId = rewardAdId;
         this.storeAppId = storeAppId;
+        this.proVersionStoreAppId = proVersionStoreAppId;
     }
 
     public GameIdEnum getGameIdEnum() {
@@ -71,5 +89,9 @@ public enum GameProperties {
 
     public String getStoreAppId() {
         return storeAppId;
+    }
+
+    public String getProVersionStoreAppId() {
+        return proVersionStoreAppId;
     }
 }

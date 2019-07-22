@@ -20,6 +20,11 @@ public class LettersAppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
+    public boolean isPortraitMode() {
+        return true;
+    }
+
+    @Override
     public float gameScreenTopMargin() {
         return 0;
     }
@@ -75,8 +80,8 @@ public class LettersAppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
-    public String proVersionStoreAppId() {
-        return null;
+    public String getProVersionStoreAppId() {
+        return activity.getPackageName() + "Pro";
     }
 
     @Override

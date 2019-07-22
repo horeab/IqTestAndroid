@@ -1,15 +1,16 @@
 package com.habapps.service;
 
-import libgdx.game.LettersGame;
+
+import libgdx.implementations.iq.SkelGame;
 
 public class LibGdxGameCalls {
 
     public void showMainMenuScreen() {
-        LettersGame.getInstance().getScreenManager().showMainScreen();
+        SkelGame.getInstance().getScreenManager().showMainScreen();
     }
 
     public boolean hasInternet() {
-        return LettersGame.getInstance().hasInternet();
+        return SkelGame.getInstance().hasInternet();
     }
 
 }

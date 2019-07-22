@@ -20,7 +20,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.habapps.service.LettersAppInfoServiceImpl;
 
 import libgdx.game.Game;
-import libgdx.game.LettersGame;
+import libgdx.implementations.iq.SkelGame;
 import libgdx.utils.startgame.test.DefaultBillingService;
 import libgdx.utils.startgame.test.DefaultFacebookService;
 
@@ -73,7 +73,7 @@ public class AndroidLauncher extends AndroidApplication {
 
     private View createGameView() {
         return initializeForView(
-                new LettersGame(
+                new SkelGame(
                         new DefaultFacebookService(),
                         new DefaultBillingService(),
                         appInfoService),

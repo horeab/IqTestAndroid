@@ -14,18 +14,23 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
+    public String getProVersionStoreAppId() {
+        return iosLauncher.getGameProperties().getProVersionStoreAppId();
+    }
+
+    @Override
     public String getGameIdPrefix() {
         return iosLauncher.getGameProperties().getGameIdEnum().name();
     }
 
     @Override
-    public boolean isProVersion() {
-        return false;
+    public boolean isPortraitMode() {
+        return true;
     }
 
     @Override
-    public String proVersionStoreAppId() {
-        return null;
+    public boolean isProVersion() {
+        return false;
     }
 
     @Override
@@ -80,7 +85,7 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
 
     @Override
     public float gameScreenTopMargin() {
-        if (screenShotMode()) {
+        if (screenShotMode() || isProVersion()) {
             return 0;
         }
         return iosLauncher.getSafeAreaInsets() + iosLauncher.getBannerAdHeight();
