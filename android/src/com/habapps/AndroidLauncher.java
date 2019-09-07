@@ -44,12 +44,14 @@ public class AndroidLauncher extends AndroidApplication {
         LinearLayout allScreenView = new LinearLayout(this);
         allScreenView.setOrientation(LinearLayout.VERTICAL);
         int libgdxAdviewHeight = getResources().getDimensionPixelOffset(R.dimen.libgdx_adview_height);
-        ViewGroup.LayoutParams adParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, libgdxAdviewHeight);
-        AdView bannerAdview = new AdView(this);
-        allScreenView.addView(bannerAdview, adParams);
+        if (!appInfoService.isProVersion()) {
+            ViewGroup.LayoutParams adParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, libgdxAdviewHeight);
+            AdView bannerAdview = new AdView(this);
+            allScreenView.addView(bannerAdview, adParams);
+            initAds(bannerAdview);
+        }
         allScreenView.addView(createGameView());
         setContentView(allScreenView);
-        initAds(bannerAdview);
     }
 
     private void initServices() {
@@ -90,20 +92,22 @@ public class AndroidLauncher extends AndroidApplication {
 
 
     public void showPopupAd() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (interstitialAd.isLoaded()) {
-                    interstitialAd.show();
-                    interstitialAd.setAdListener(new AdListener() {
-                        @Override
-                        public void onAdClosed() {
-                            interstitialAd.loadAd(new AdRequest.Builder().build());
-                        }
-                    });
+        if (!appInfoService.isProVersion()) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (interstitialAd.isLoaded()) {
+                        interstitialAd.show();
+                        interstitialAd.setAdListener(new AdListener() {
+                            @Override
+                            public void onAdClosed() {
+                                interstitialAd.loadAd(new AdRequest.Builder().build());
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 

@@ -86,6 +86,6 @@ public class LettersAppInfoServiceImpl implements AppInfoService {
 
     @Override
     public boolean isProVersion() {
-        return false;
+        return true;
     }
 }
