@@ -4,6 +4,7 @@ package com.habapps.skelgame;
 import com.habapps.IOSLauncher;
 
 import libgdx.game.external.AppInfoService;
+import libgdx.utils.Utils;
 
 public class LettersGameAppInfoServiceImpl implements AppInfoService {
 
@@ -11,6 +12,11 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
 
     public LettersGameAppInfoServiceImpl(IOSLauncher iosLauncher) {
         this.iosLauncher = iosLauncher;
+    }
+
+    @Override
+    public void removeAds() {
+        iosLauncher.removeAds();
     }
 
     @Override
@@ -44,8 +50,8 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
-    public void showPopupAd() {
-        iosLauncher.showPopupAd();
+    public void showPopupAd(Runnable afterClose) {
+        iosLauncher.showPopupAd(afterClose);
     }
 
     @Override
@@ -59,12 +65,7 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
     }
 
     @Override
-    public boolean screenShotMode() {
-        return false;
-    }
-
-    @Override
-    public boolean googleFacebookLoginEnabled() {
+    public boolean isScreenShotMode() {
         return false;
     }
 
@@ -85,7 +86,7 @@ public class LettersGameAppInfoServiceImpl implements AppInfoService {
 
     @Override
     public float gameScreenTopMargin() {
-        if (screenShotMode() || isProVersion()) {
+        if (isScreenShotMode() || Utils.isValidExtraContent()) {
             return 0;
         }
         return iosLauncher.getSafeAreaInsets() + iosLauncher.getBannerAdHeight();

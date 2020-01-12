@@ -24,6 +24,17 @@ public class SkelGameDependencyManager extends CampaignGameDependencyManager {
     }
 
     @Override
+    protected String allQuestionText() {
+        return "";
+    }
+
+
+    @Override
+    public String getExtraContentProductId() {
+        return "extraContentIqtest";
+    }
+
+    @Override
     public Class<SkelGameSpecificResource> getSpecificResourceTypeEnum() {
         return SkelGameSpecificResource.class;
     }

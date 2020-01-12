@@ -6,8 +6,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import libgdx.controls.animations.ActorAnimation;
 import libgdx.controls.button.ButtonBuilder;
 import libgdx.controls.button.MainButtonSkin;
 import libgdx.controls.button.MyButton;
@@ -24,6 +27,7 @@ import libgdx.resources.FontManager;
 import libgdx.resources.MainResource;
 import libgdx.resources.Res;
 import libgdx.resources.dimen.MainDimen;
+import libgdx.screens.screens.GameOverScreen;
 import libgdx.utils.ScreenDimensionsManager;
 import libgdx.utils.Utils;
 
@@ -31,12 +35,12 @@ public class GameCreator {
 
     private final static String MAIN_TABLE_NAME = "MAIN_TABLE_NAME";
 
-    private QuestionService service;
+    private StoreService storeService;
     private CurrentGame currentGame;
 
     public GameCreator(CurrentGame currentGame) {
         this.currentGame = currentGame;
-        this.service = new QuestionService();
+        this.storeService = new StoreService();
         addQuestionScreen(currentGame.getCurrentQuestion());
     }
 
@@ -69,18 +73,39 @@ public class GameCreator {
         skip.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (Game.getInstance().getAppInfoService().screenShotMode()) {
-                    Utils.createChangeLangPopup();
-                } else {
-                    goToNextLevel(true);
-                }
+                goToNextLevel();
             }
         });
+        Table firstRow = new Table();
+        Table secondRow = new Table();
         float dimen = MainDimen.horizontal_general_margin.getDimen();
-        table.add(new MyWrappedLabel(new MyWrappedLabelConfigBuilder().setText((currentGame.getCurrentQuestionToDisplay() + "/" + Question.values().length)).setFontScale(FontManager.getBigFontDim()).setSingleLineLabel().build())).pad(dimen);
-        table.add().growX();
-        table.add(newGame).width(newGame.getWidth()).height(newGame.getHeight());
-        table.add(skip).pad(dimen).width(skip.getWidth() + skip.getWidth() / 2).height(skip.getHeight());
+        MyWrappedLabel currentQLabel = new MyWrappedLabel(new MyWrappedLabelConfigBuilder().setText((currentGame.getCurrentQuestionToDisplay() + "/" + Question.values().length)).setFontScale(FontManager.getBigFontDim()).setSingleLineLabel().build());
+        if (!Utils.isValidExtraContent()) {
+            Image mug = GraphicUtils.getImage(MainResource.mug);
+            float mugDimen = dimen * 7;
+            mug.setWidth(mugDimen);
+            mug.setHeight(mugDimen);
+            new ActorAnimation(mug, Game.getInstance().getAbstractScreen()).animateZoomInZoomOut();
+            firstRow.add(mug).pad(dimen).growX().width(mugDimen).height(mugDimen);
+            mug.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    GameOverScreen.displayInAppPurchasesPopup();
+                }
+            });
+            firstRow.add().growX();
+            /////////////////
+            secondRow.add(currentQLabel).colspan(4);
+        } else {
+            firstRow.add(currentQLabel).width(ScreenDimensionsManager.getScreenWidthValue(25));
+        }
+
+        firstRow.add(newGame).pad(dimen).width(newGame.getWidth()).height(newGame.getHeight());
+        firstRow.add().growX();
+        firstRow.add(skip).pad(dimen).width(skip.getWidth() + skip.getWidth() / 2).height(skip.getHeight());
+        table.add(firstRow).growX();
+        table.row();
+        table.add(secondRow);
         return table;
     }
 
@@ -131,97 +156,99 @@ public class GameCreator {
         Group root = Game.getInstance().getAbstractScreen().getStage().getRoot();
         root.findActor(MAIN_TABLE_NAME).remove();
         addQuestionScreen(currentGame.getCurrentQuestion());
+        saveCurrentState();
+    }
+
+    private void saveCurrentState() {
+        storeService.putQuestionWithAnswer(currentGame.getQuestionWithAnswer());
+        storeService.putCurrentQuestion(currentGame.getCurrentQuestion());
     }
 
     private void answerClick(int answerNr) {
-
-        int currentQuestion = currentGame.getCurrentQuestion();
-        processForCorrectAnswer(answerNr, currentQuestion);
-
-        goToNextLevel(false);
+        currentGame.getQuestionWithAnswer().put(currentGame.getCurrentQuestion(), answerNr);
+        goToNextLevel();
     }
 
-    private boolean isGameOver(int nextQuestion) {
-        boolean isGameOver;
-        isGameOver = currentGame.getSkippedQuestions().isEmpty() && currentGame.areOnlySkippedQuestionsLeft();
-        if (isGameOver) {
-            return true;
+    private List<Integer> getSkippedQuestions() {
+        List<Integer> skippedQuestions = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : currentGame.getQuestionWithAnswer().entrySet()) {
+            if (entry.getValue() == -1) {
+                skippedQuestions.add(entry.getKey());
+            }
         }
-        isGameOver = noNextQuestion(nextQuestion) && currentGame.getSkippedQuestions().isEmpty();
+        return skippedQuestions;
+    }
+
+    private boolean isGameOver() {
+        boolean isGameOver = true;
+        for (Map.Entry<Integer, Integer> entry : currentGame.getQuestionWithAnswer().entrySet()) {
+            if (entry.getValue() == -1) {
+                isGameOver = false;
+                break;
+            }
+        }
         return isGameOver;
     }
 
-    private boolean noNextQuestion(int nextQuestion) {
-        return nextQuestion > Question.values().length - 1;
-    }
-
-    private void processForCorrectAnswer(int answerNr, int currentQuestion) {
-        if (service.isAnswerCorrect(currentQuestion, answerNr)) {
-            currentGame.setCorrectAnswers(currentGame.getCorrectAnswers() + 1);
-        }
-    }
-
     private void goToLevel(int level) {
-        if (level == 10 && !Game.getInstance().getAppInfoService().isProVersion()) {
+        if (level == 10 && !Utils.isValidExtraContent()) {
             new ProVersionPopup(Game.getInstance().getAbstractScreen()).addToPopupManager();
         } else if (level == 20 || level == 30) {
-            Game.getInstance().getAppInfoService().showPopupAd();
+            Game.getInstance().getAppInfoService().showPopupAd(new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
         }
 
-        if (isGameOver(level)) {
-            goToGameOver();
-        } else if (noNextQuestion(level)) {
-            level = currentGame.getSkippedQuestions().get(0);
-            currentGame.getSkippedQuestions().remove(0);
-            currentGame.setOnlySkippedQuestionsLeft(true);
+        if (isGameOver()) {
+            SkelGame.getInstance().getScreenManager().showGameOver(currentGame.getQuestionWithAnswer());
         } else {
             currentGame.setCurrentQuestion(level);
             refreshLevel();
         }
     }
 
-    private void goToGameOver() {
-        SkelGame.getInstance().getScreenManager().showGameOver(service.calculateIq(currentGame.getCorrectAnswers()));
-    }
-
     private void startNewGame() {
-        Game.getInstance().getAppInfoService().showPopupAd();
-        new StoreService().reset();
-        currentGame.reset();
-        refreshLevel();
+        Game.getInstance().getAppInfoService().showPopupAd(new Runnable() {
+            @Override
+            public void run() {
+                currentGame.reset();
+                storeService.reset();
+                refreshLevel();
+            }
+        });
     }
 
-    private void goToNextLevel(boolean isSkipped) {
-
+    private void goToNextLevel() {
         int currentQuestion = currentGame.getCurrentQuestion();
-        List<Integer> skippedQuestions = currentGame.getSkippedQuestions();
-
-        int nextQuestion = currentQuestion + 1;
-
-        if (isSkipped) {
-            if (skippedQuestions.contains(currentQuestion)) {
-                skippedQuestions.remove(Integer.valueOf(currentQuestion));
+        int nextQuestion = -1;
+        for (Map.Entry<Integer, Integer> entry : currentGame.getQuestionWithAnswer().entrySet()) {
+            if (entry.getKey() > currentQuestion && entry.getValue() == -1) {
+                nextQuestion = entry.getKey();
+                break;
             }
-            skippedQuestions.add(currentQuestion);
-        }
 
-        if (noNextQuestion(nextQuestion) && !skippedQuestions.isEmpty()) {
-            currentGame.setOnlySkippedQuestionsLeft(true);
         }
-
-        if (currentGame.areOnlySkippedQuestionsLeft() && !skippedQuestions.isEmpty()) {
-            int indx = skippedQuestions.indexOf(currentQuestion);
-            int nextIndx = indx + 1;
-            if (nextIndx > skippedQuestions.size() - 1) {
-                nextIndx = 0;
-            }
-            nextQuestion = skippedQuestions.get(nextIndx);
+        if (nextQuestion == -1) {
+            nextQuestion = getNextQuestionForSkipped();
         }
-
-        if (skippedQuestions.contains(currentQuestion) && !isSkipped) {
-            skippedQuestions.remove(Integer.valueOf(currentQuestion));
-        }
-
         goToLevel(nextQuestion);
+    }
+
+
+    private int getNextQuestionForSkipped() {
+        int currentQuestion = currentGame.getCurrentQuestion();
+        List<Integer> skipped = getSkippedQuestions();
+        int nextSkipped = -1;
+        for (Integer q : skipped) {
+            if (q > currentQuestion) {
+                nextSkipped = q;
+            }
+        }
+        if (nextSkipped == -1 && !skipped.isEmpty()) {
+            nextSkipped = skipped.get(0);
+        }
+        return nextSkipped;
     }
 }

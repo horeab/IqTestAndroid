@@ -21,8 +21,7 @@ import com.habapps.service.LettersAppInfoServiceImpl;
 
 import libgdx.game.Game;
 import libgdx.implementations.iq.SkelGame;
-import libgdx.utils.startgame.test.DefaultBillingService;
-import libgdx.utils.startgame.test.DefaultFacebookService;
+import libgdx.utils.Utils;
 
 public class AndroidLauncher extends AndroidApplication {
 
@@ -44,7 +43,7 @@ public class AndroidLauncher extends AndroidApplication {
         LinearLayout allScreenView = new LinearLayout(this);
         allScreenView.setOrientation(LinearLayout.VERTICAL);
         int libgdxAdviewHeight = getResources().getDimensionPixelOffset(R.dimen.libgdx_adview_height);
-        if (!appInfoService.isProVersion()) {
+        if (!Utils.isValidExtraContent()) {
             ViewGroup.LayoutParams adParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, libgdxAdviewHeight);
             AdView bannerAdview = new AdView(this);
             allScreenView.addView(bannerAdview, adParams);
@@ -76,8 +75,6 @@ public class AndroidLauncher extends AndroidApplication {
     private View createGameView() {
         return initializeForView(
                 new SkelGame(
-                        new DefaultFacebookService(),
-                        new DefaultBillingService(),
                         appInfoService),
                 new AndroidApplicationConfiguration());
     }
@@ -92,7 +89,7 @@ public class AndroidLauncher extends AndroidApplication {
 
 
     public void showPopupAd() {
-        if (!appInfoService.isProVersion()) {
+        if (!Utils.isValidExtraContent()) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
